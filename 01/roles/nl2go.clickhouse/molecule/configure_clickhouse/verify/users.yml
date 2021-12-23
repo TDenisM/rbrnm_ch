@@ -1,0 +1,33 @@
+---
+- name: Get Users Configuration file content
+  shell: "cat {{ clickhouse_conf_dir }}/users.xml"
+  register: user_config_result
+  changed_when: no
+
+- name: Verify profiles, users, quotas
+  assert:
+    that:
+      - "'<profiles>' in user_config_result.stdout"
+      - "'</profiles>' in user_config_result.stdout"
+      - "'<users>' in user_config_result.stdout"
+      - "'</users>' in user_config_result.stdout"
+      - "'<quotas>' in user_config_result.stdout"
+      - "'</quotas>' in user_config_result.stdout"
+      - "'<access_management>' in user_config_result.stdout"
+      - "'</access_management>' in user_config_result.stdout"
+
+- name: Verify default profile, user and quota
+  assert:
+    that:
+      - user_config_result.stdout.count('<default>') == 3
+      - user_config_result.stdout.count('</default>') == 3
+
+- name: Connect to the database
+  shell: clickhouse-client --user=sib --password=sib --query='SHOW DATABASES;'
+  register: query_result
+  changed_when: no
+
+- name: Verify connection
+  assert:
+    that:
+      - query_result.rc == 0

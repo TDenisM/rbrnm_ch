@@ -1,0 +1,14 @@
+---
+# Variables
+clickhouse_replica_id: default
+clickhouse_interserver_http_host: '127.0.0.1'
+clickhouse_listen_addresses: []
+clickhouse_timezone: 'Europe/Moscow'
+clickhouse_kafka_client_users:
+  - { username: '', password: '' }
+clickhouse_zookeeper_credentials: 
+clickhouse_clusters:
+  distributed_cluster_1:
+    shard1:
+      - { host: '127.0.0.1', port: 9000 }
+clickhouse_distributed_user: default

@@ -1,0 +1,8 @@
+[servers]
+server1 ansible_host=192.168.33.10 ansible_user=vagrant zoo_id=1 shard_id=01
+#server2 ansible_host=192.168.33.11 ansible_user=vagrant zoo_id=2 shard_id=01
+#server3 ansible_host=192.168.33.12 ansible_user=vagrant zoo_id=3 shard_id=02
+#server4 ansible_host=192.168.33.13 ansible_user=vagrant shard_id=02
+
+#s1 ansible_host=207.154.207.24 ansible_user=user ansible_ssh_pass=jzogdfqtbddx
+#s2 ansible_host=64.225.106.230 ansible_user=root ansible_ssh_pass=xzhigqokbyqy

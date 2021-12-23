@@ -1,0 +1,28 @@
+---
+- name: install
+  hosts: all
+  become: yes
+  tasks:
+    - name: select partition
+      shell: clickhouse-client --query "SELECT partition FROM system.parts WHERE active AND database = 'db'"
+      register: partition
+    - name: freeze partition
+      shell: clickhouse-client --query "ALTER TABLE db.local_data FREEZE PARTITION '{{ partition.stdout }}'"
+    - name: create backup folder
+      file:
+        path: /opt/ch/backups
+        state: directory
+        owner: clickhouse
+        group: clickhouse
+    - name: copy backup data
+      copy:
+        directory_mode: yes
+        remote_src: yes
+        src: /var/lib/clickhouse/shadow/1
+        dest: /opt/ch/backups
+    - name: create db
+      shell: clickhouse-client --query "CREATE DATABASE db_restore"
+    - name: get meta
+      shell: clickhouse-client --query="SHOW CREATE TABLE db.local_data" > current_meta.sql
+    - name: restore meta
+      shell: cat current_meta.sql | clickhouse-client --database db_restore

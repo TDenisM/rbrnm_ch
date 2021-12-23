@@ -1,0 +1,13 @@
+---
+- name: Get ClickHouse service status
+  command: service clickhouse-server status
+  args:
+    warn: no
+  register: service_status
+  changed_when: no
+  ignore_errors: yes
+
+- name: Verify ClickHouse is running
+  assert:
+    that:
+      - "'Active: ' in service_status.stdout"

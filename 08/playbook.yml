@@ -1,0 +1,12 @@
+---
+- name: install
+  hosts: all
+  become: yes
+  roles:
+    - ansible-clickhouse
+  tasks:
+    - name: start service
+      service:
+        name: clickhouse-server
+        state: restarted
+    

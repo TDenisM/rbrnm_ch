@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<yandex>
+    <clickhouse_remote_servers>
+        <local>
+            <shard>
+                <replica>
+                    <default_database>default</default_database>
+                    <host>{{ hostvars["s1"]["ansible_host"] }}</host>
+                    <port>9000</port>
+                    <user>default</user>
+                    <!-- <password></password> -->
+                </replica>
+		</shard>
+		<shard>
+                <replica>
+                    <default_database>default</default_database>
+                    <host>{{ hostvars["s2"]["ansible_host"]  }}</host>
+                    <port>9000</port>
+                    <user>default</user>
+                    <!-- <password></password> -->
+                </replica>
+            </shard>
+        </local>
+    </clickhouse_remote_servers>
+</yandex>

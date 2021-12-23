@@ -1,0 +1,7 @@
+---
+- src: nl2go.openjdk
+  version: 1.0.0
+- src: nl2go.zookeeper
+  version: 1.0.0
+- src: nl2go.kafka
+  version: 1.0.0

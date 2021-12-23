@@ -1,0 +1,55 @@
+---
+- name: install
+  hosts: all
+  become: yes
+  roles:
+    - ansible-clickhouse
+  pre_tasks:
+    - name: create target folder
+      file:
+        path: /etc/clickhouse-server/
+        state: directory
+        mode: '0666'
+    - name: create cluster template file
+      template:
+        src: files/cluster.xml.j2
+        dest: /etc/clickhouse-server/cluster.xml
+        mode: '0644'
+  tasks:
+    - name: start service
+      service:
+        name: clickhouse-server
+        state: restarted
+    - name: copy init table query file
+      copy:
+        src: files/table.sql
+        dest: .
+    - name: if table exists
+      shell: clickhouse-client --database "default" --query "EXISTS TABLE ch_local"
+      register: result
+    - name: drop table
+      shell: clickhouse-client --database "default" --query "DROP TABLE ch_local"
+      when: result.stdout == '1'
+    - name: exec init table query
+      shell: clickhouse-client --database "default" --queries-file table.sql
+    - name: copy init distributed query file
+      copy:
+        src: files/distributed_table.sql
+        dest: .
+    - name: if distributed table exists
+      shell: clickhouse-client --database "default" --query "EXISTS TABLE ch_distributed"
+      register: result
+    - name: drop distributed table
+      shell: clickhouse-client --database "default" --query "DROP TABLE ch_distributed"
+      when: result.stdout == '1'
+    - name: exec init distributed table query
+      shell: clickhouse-client --database "default" --queries-file distributed_table.sql
+- name: insert dataset
+  hosts: s1
+  tasks:
+    - name: copy dataset
+      copy:
+        src: files/dataset.csv
+        dest: .
+    - name: exec query
+      shell: clickhouse-client --query "INSERT INTO ch_distributed FORMAT CSV" < dataset.csv

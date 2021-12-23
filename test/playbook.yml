@@ -1,0 +1,12 @@
+---
+- name: install
+  hosts: all
+  become: yes
+  vars:
+    - timescaledb_pg_database_owner_password: prometheus
+    - timescaledb_pg_database: default
+    - timescaledb_pg_database_owner: prometheus
+  roles:
+    - ansible-clickhouse
+    - cloudalchemy.prometheus
+    - idealista.promscale_role

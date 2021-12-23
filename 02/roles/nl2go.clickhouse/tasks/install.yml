@@ -1,0 +1,63 @@
+---
+- name: Install multiple packages
+  apt:
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+      - dirmngr
+    update_cache: yes
+  become: true
+
+- name: Add the APT Key for ClickHouse.
+  apt_key:
+    keyserver: "{{ clickhouse_key_server }}"
+    id: E0C56BD4
+    state: present
+  become: true
+
+- name: Add ClickHouse APT sources
+  apt_repository:
+    repo: deb https://repo.clickhouse.tech/deb/stable/ main/
+    state: present
+
+# It is assumed that clickhouse-server creates user and group clickhouse. They are used along the role.
+- name: Install ClickHouse
+  apt:
+    pkg:
+      - clickhouse-server={{ clickhouse_version }}
+      - clickhouse-client={{ clickhouse_version }}
+      - clickhouse-common-static={{ clickhouse_version }}
+  notify: Enable ClickHouse
+
+# CH can do its own logrotation, but I think this is responsability of logrotate, no CH.
+- name: Install | Logrotate CH logs
+  template:
+    src: clickhouse.logrotate.j2
+    dest: "/etc/logrotate.d/clickhouse"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create non sensitive ClickHouse directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ clickhouse_user }}"
+    group: "{{ clickhouse_group }}"
+  loop:
+    - "{{ clickhouse_conf_dir }}"
+
+- name: Create sensitive ClickHouse directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0750"
+    owner: "{{ clickhouse_user }}"
+    group: "{{ clickhouse_group }}"
+  loop:
+    - "{{ clickhouse_path }}"
+    - "{{ clickhouse_user_files_path }}"
+    - "{{ clickhouse_access_control_path }}"
+    - "{{ clickhouse_tmp_path }}"
+    - "{{ clickhouse_log_directory }}"

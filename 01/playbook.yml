@@ -1,0 +1,17 @@
+---
+- name: install
+  hosts: all
+  become: yes
+  roles:
+    - nl2go.clickhouse
+  tasks:
+    - name: start service
+      service:
+        name: clickhouse-server
+        state: started
+    - name: test db connection
+      shell: clickhouse-client --query='select 1'
+      register: result
+    - name: print result
+      debug:
+        msg: '{{ result.stdout }}'

@@ -1,0 +1,24 @@
+---
+- name: install
+  hosts: all
+  become: yes
+  roles:
+    - nl2go.clickhouse
+  tasks:
+    - name: copy config file
+      copy:
+        src: files/main.xml
+        dest: /etc/clickhouse-server/config.d/main.xml
+        owner: clickhouse
+        group: clickhouse
+    - name: start service
+      service:
+        name: clickhouse-server
+        state: restarted
+    - name: test http
+      uri:
+        url: 'http://127.0.0.1:8125/'
+        return_content: yes
+      register: reply
+    - debug:
+        msg: '{{ reply.content }}'

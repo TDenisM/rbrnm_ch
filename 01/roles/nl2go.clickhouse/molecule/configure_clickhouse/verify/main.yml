@@ -1,0 +1,23 @@
+---
+- name: Verify ClickHouse state
+  hosts: clickhouse
+  tasks:
+    - include_tasks: base.yml
+      vars:
+        clickhouse_conf_dir: "/etc/clickhouse-server"
+        clickhouse_logs_conf: "{{ clickhouse_conf_dir }}/config.d/log-level.xml"
+        clickhouse_loglevel: "information"
+
+- name: Verify ClickHouse users settings
+  hosts: clickhouse
+  tasks:
+    - include_tasks: users.yml
+      vars:
+        clickhouse_conf_dir: "/etc/clickhouse-server"
+
+- name: Verify ClickHouse zookeeper settings
+  hosts: clickhouse
+  tasks:
+    - include_tasks: zookeeper.yml
+      vars:
+        clickhouse_conf_dir: "/etc/clickhouse-server"

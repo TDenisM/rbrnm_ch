@@ -1,0 +1,7 @@
+---
+# handlers file for clickhouse
+- name: "Restart Clickhouse Service"
+  set_fact:
+    clickhouse_service_ensure: "restarted"
+  listen: 'restart-ch'
+  when: clickhouse_service_ensure != "stopped"

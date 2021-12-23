@@ -1,0 +1,34 @@
+---
+- name: install
+  hosts: all
+  become: yes
+  roles:
+    - ansible-clickhouse
+  tasks:
+    - name: create rsa keys
+      shell: openssl req -subj "/CN=localhost" -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /etc/clickhouse-server/server.key -out /etc/clickhouse-server/server.crt
+      args:
+        creates: /etc/clickhouse-server/server.key
+    - name: create HD param file
+      shell: openssl dhparam -out /etc/clickhouse-server/dhparam.pem 4096
+      args:
+        creates: /etc/clickhouse-server/dhparam.pem
+    - name: set permissions
+      file:
+        path: '{{ item }}'
+        owner: clickhouse
+        group: clickhouse
+      with_items:
+        - /etc/clickhouse-server/server.crt
+        - /etc/clickhouse-server/server.key
+        - /etc/clickhouse-server/dhparam.pem
+    - name: disable verification on client
+      xml:
+        path: /etc/clickhouse-client/config.xml
+        xpath: /config/openSSL/client/verificationMode
+        value: none
+    - name: start service
+      service:
+        name: clickhouse-server
+        state: restarted
+    

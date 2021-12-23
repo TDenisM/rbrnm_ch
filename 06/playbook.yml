@@ -1,0 +1,22 @@
+---
+- name: install
+  hosts: all
+  become: yes
+  roles:
+    - ansible-clickhouse
+  tasks:
+    - name: set log level
+      xml:
+        path: /etc/clickhouse-server/config.xml
+        xpath: /yandex/logger/level
+        value: information
+    - name: set log size
+      xml:
+        path: /etc/clickhouse-server/config.xml
+        xpath: /yandex/logger/size
+        value: 3000M
+    - name: start service
+      service:
+        name: clickhouse-server
+        state: restarted
+    

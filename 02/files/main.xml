@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<yandex>
+    <http_port>8125</http_port>
+    <http_server_default_response>You reached CH http port</http_server_default_response>
+    <timezone>UTC</timezone>
+    <max_connections>100</max_connections>
+</yandex>

@@ -1,0 +1,60 @@
+---
+- name: install
+  hosts: all
+  become: yes
+  roles:
+    - ansible-clickhouse
+  tasks:
+    - name: start service
+      service:
+        name: clickhouse-server
+        state: restarted
+    - name: copy files
+      copy:
+        src: '{{ item }}'
+        dest: .
+      with_items:
+        - files/meta.sql
+        - files/dataset.csv
+        - files/new_meta.sql
+    - name: exec meta
+      shell: clickhouse-client --queries-file meta.sql
+    - name: insert data
+      shell: clickhouse-client --query "INSERT INTO db.local_data FORMAT CSV" < dataset.csv
+    - name: select partition
+      shell: clickhouse-client --query "SELECT partition_id FROM system.parts WHERE active AND database = 'db'"
+      register: partition
+    - name: freeze partition
+      shell: clickhouse-client --query "ALTER TABLE db.local_data FREEZE PARTITION ID '{{ partition.stdout }}'"
+#    - name: freeze table
+#      shell: clickhouse-client --query "ALTER TABLE db.local_data FREEZE"
+    - name: create backup folder
+      file:
+        path: /opt/ch/backups
+        state: directory
+        owner: clickhouse
+        group: clickhouse
+    - name: copy backup data
+      copy:
+        directory_mode: yes
+        remote_src: yes
+        src: /var/lib/clickhouse/shadow/1
+        dest: /opt/ch/backups
+    - name: restore meta
+      shell: clickhouse-client --queries-file new_meta.sql
+    - name: create detached folder
+      file:
+        path: /var/lib/clickhouse/data/db_restore/local_data/detached
+        state: directory
+        owner: clickhouse
+        group: clickhouse
+#    - name: copy detached data
+#      copy:
+#        directory_mode: yes
+#        remote_src: yes
+#        src: /opt/ch/backups/1/
+#        dest: /var/lib/clickhouse/data/db_restore/local_data/detached
+#        owner: clickhouse
+#        group: clickhouse
+#    - name: attach data
+#      shell: clickhouse-client --query "ALTER TABLE db_restore.local_data ATTACH PARTITION ID '{{ partition.stdout }}'"
